@@ -58,6 +58,20 @@ print("Accuracy:" + str(float(accuracy_cnt) / len(x)))
 # x, _= get_data()
 # # _ is to ignore the return value we dont need
 
+#batch processing
+batch_size = 100
+
+
+for i in range(0, len(x), batch_size):
+	x_batch = x[i:i+batch_size]
+	y_batch = predict(network, x_batch)
+	p = np.argmax(y_batch, axis=1)
+	accuracy_cnt += np.sum(p == t[i:i+batch_size])
+# i in range(start, end, step)
+# arr[i:i+step]: abstract the elements and generate a new list
+# axis: search the max value along the axis (in matrix, axis0 is the row direction, axis1 is the col direction)
+
+print("Accuracy:" + str(float(accuracy_cnt) / len(x)))
 
 
 
