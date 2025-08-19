@@ -26,7 +26,7 @@ x_batch = x_train[batch_mask]
 t_batch = t_train[batch_mask]
 
 # for one-hot
-def cross_entropy_error(y,t):
+def cross_entropy_error_one(y,t):
 	if y.ndim == 1:
 		# avoiding vague shapes
 		t = t.reshape(1, t.size) # 2-dim arrays, indicating 1 sample with size features
@@ -34,7 +34,7 @@ def cross_entropy_error(y,t):
 	batch_size = y.shape[0]
 	return -np.sum(t * np.log(y + 1e-7)) / batch_size
 # for labels
-def cross_entropy_error(y,t):
+def cross_entropy_error_nor(y,t):
 	if y.ndim == 1:
 		# avoiding vague shapes
 		t = t.reshape(1, t.size)
