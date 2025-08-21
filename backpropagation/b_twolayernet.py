@@ -1,5 +1,5 @@
 import sys, os
-sys.path.append(os.pardir)
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 from common.layers import *
 from common.functions import *
@@ -56,7 +56,7 @@ class TwoLayerNet:
 
 		# backward
 		dout = 1
-		dout.self.lastLayer.backward(dout)
+		dout = self.lastLayer.backward(dout)
 
 		layers = list(self.layers.values())
 		layers.reverse()
