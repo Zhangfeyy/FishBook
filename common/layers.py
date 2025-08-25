@@ -1,6 +1,8 @@
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
-from ..common.functions import * 
-
+from common.functions import *
+from common.util import *
 # switch in circus
 class Relu:
 	def __init__(self):
@@ -33,7 +35,6 @@ class Sigmoid:
 	
 	def backward(self, dout):
 		dx = dout * (1.0 -self.out) * self.out
-
 		return dx
 
 if __name__ == "__main__":
@@ -53,7 +54,7 @@ if __name__ == "__main__":
 class Affine:
 	def __init__(self, W, b):
 		self.W = W
-		self.b = B
+		self.b = b
 		self.x = None
 		self.dW = None
 		self.db = None
@@ -72,8 +73,8 @@ class Affine:
 		return dx
 
 class SoftmaxWithLoss:
-	def __inint__(self):
-		self.loss - None
+	def __init__(self):
+		self.loss = None
 		self.y = None
 		self.t = None
 
@@ -87,4 +88,65 @@ class SoftmaxWithLoss:
 	def backward(self, dout=1):
 		batch_size = self.t.shape[0]
 		dx = (self.y - self.t) / batch_size
+
+		return dx
 		# to average the error to each single data
+
+class Dropout:
+	def __init__(self, dropout_ratio=0.5):
+		self.dropout_ratio=dropout_ratio
+		self.mask = None # boolean to indicate which neurons are active
+	
+	def forward(self, x, train_flg=True):
+		if train_flg:
+			self.mask=np.random.rand(*x.shape) > self.dropout_ratio
+			# 1. create a random array between 0,1, same shape as x
+			# 2. decide which element is more than .5
+			# 3. gain a boolean array
+			return x * self.mask
+			# element-wise multiplication: decide 0(drop), or w(keep)
+		else:
+			return x*(1.0-self.dropout_ratio) # for testing
+
+	def backward(self,dout):
+		return dout*self.mask # analogous to ReLu
+	
+class Convolution:
+	def __init__(self, W, b, stride = 1, pad = 0):
+		self.W = W
+		self.b = B
+		self.stride = stride
+		self.pad = pad
+	
+	def forward(self, x):
+		FN,C,FH,FW = self.W.shape
+		N,C,H,W = x.shape
+		out_h = int(1+(H+2*self.pad - FH) / self.stride)
+		out_w = int(1+(W+2*self.pad - FW) / self.stride)
+
+		col = im2col(x, FH,FW,self.stride, self.pad)
+		col_W = self.W.reshape(FN, -1).T # filter spanned
+		out = np.dot(col, col_W) + self.b
+
+		out = out.reshape(N.out_h, out_w, -1).transpose(0,3,1,2) # transpose changes the axis order
+		return out
+	
+class Pooling:
+	def __init__(self, pool_h, pool_w, stride=1, pad=0):
+		self.pool_h = pool_h
+		self.pool_w = pool_w
+		self.stride = stride
+		self.pad = pad
+	
+	def forward(self,x):
+		N,C,H,W = x.shape
+		out_h = int(1+(H-self.pool_h)/self.stride)
+		out_w = int(1+(W-self.pool_w)/self.stride)
+
+		col = im2col(x,self.pool_h, self.pool_w, self.stride, self.pad)
+		col = col.reshape(-1, self.pool_h*self.pool_w)
+
+		out = np.max(col, axis=1) # row direction
+		out = out.reshape(N, out_h, out_w, C).transpose(0,3,1,2)
+		return out
+	

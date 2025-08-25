@@ -28,12 +28,17 @@ def cross_entropy_error(y,t):
 	batch_size = y.shape[0]
 	return -np.sum(t * np.log(y + 1e-7)) / batch_size
 
-def softmax(a):
-	c = np.max(a)
-	exp_a = np.exp(a - c)
-	sum_exp_a = np.sum(exp_a)
-	y = exp_a / sum_exp_a
-	return y
+def softmax(x):
+    # batch is a 2dim array
+    if x.ndim == 2: 
+        x = x.T # for broadcasting!
+        x = x - np.max(x, axis=0) # along the axis0
+        # or directly transpose np.max(x, axis=1).reshape(-1, 1)
+        y = np.exp(x) / np.sum(np.exp(x), axis=0)
+        return y.T # transpose back
+    
+    x = x - np.max(x)
+    return np.exp(x) / np.sum(np.exp(x))
 
 def sigmoid(x):
 	return 1/(1 + np.exp(-x))
